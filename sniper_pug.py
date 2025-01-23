@@ -2,13 +2,14 @@ import tkinter as tk
 from tkinter import messagebox
 import requests
 import re
+import difflib
 import threading
 import time
 from datetime import datetime, timedelta
 import os
 import pytz
 
-GITHUB_RAW_URL = "https://raw.githubusercontent.com/valory-xyz/trader-quickstart/refs/heads/main/scripts/choose_staking.py"
+GITHUB_RAW_URL = "https://raw.githubusercontent.com/pugpeanut/pugfetchnews/refs/heads/main/scripts/choose_staking.py"
 FILE_PATH = "staking_programs.txt"
 
 def fetch_staking_programs():
@@ -34,8 +35,16 @@ def fetch_staking_programs():
                     saved_programs_string = file.read()
                 
                 if staking_programs_string != saved_programs_string:
+                    seq1 = staking_programs_string.splitlines()
+                    seq2 = saved_programs_string.splitlines()
+
+                    differ = difflib.Differ()
+
+                    diff = differ.compare(seq1, seq2)
+                    diff_dash = ''.join(map(str, diff))
+                    print('\n'.join(diff))
                     print("Differences detected!")
-                    show_difference(staking_programs_string, saved_programs_string)
+                    show_difference(staking_programs_string, diff_dash)
 
             with open(FILE_PATH, 'w') as file:
                 file.write(staking_programs_string)
@@ -43,13 +52,30 @@ def fetch_staking_programs():
     except Exception as e:
         print(f"An error occurred: {e}")
 
-def show_difference(new_string, old_string):
-    messagebox.showinfo("Staking Programs Update", "Staking programs have been updated.")
+def show_difference(new_string, diff_dash):
+    custom_messagebox("Staking Programs Update", diff_dash)
 
 def start_checking():
     while True:
         fetch_staking_programs()
-        time.sleep(1800)
+        time.sleep(30)
+
+def custom_messagebox(title, message):
+    top = tk.Toplevel()
+    top.title(title)
+
+    top.geometry("640x480")
+
+    label = tk.Label(top, text=message)
+    label.pack(padx=20, pady=20)
+
+    ok_button = tk.Button(top, text="OK", command=top.destroy)
+    ok_button.pack(pady=(0, 20))
+
+    top.transient()
+    top.grab_set()
+    top.focus_set()
+    top.wait_window()
 
 def on_start_button_click():
     thread = threading.Thread(target=start_checking)
