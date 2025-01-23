@@ -55,6 +55,15 @@ def fetch_staking_programs():
 def show_difference(new_string, diff_dash):
     custom_messagebox("Staking Programs Update", diff_dash)
 
+def pub_msg_telegram(token, chat_id, message):
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    payload = {
+        'chat_id': chat_id,
+        'text': message
+    }
+    response = requests.post(url, json=payload)
+    return response.json()
+
 def start_checking():
     while True:
         fetch_staking_programs()
