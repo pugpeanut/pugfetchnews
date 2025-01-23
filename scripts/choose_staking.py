@@ -103,6 +103,7 @@ STAKING_PROGRAMS = {
     "quickstart_beta_expert_10": "0xB0ef657b8302bd2c74B6E6D9B2b4b39145b19c6f",    
     "quickstart_beta_expert_11": "0x3112c1613eAC3dBAE3D4E38CeF023eb9E2C91CF7",    
     "quickstart_beta_expert_12": "0xF4a75F476801B3fBB2e7093aCDcc3576593Cc1fc",
+    "quickstart_beta_expert_test": "0x0000000000000000000000000000000000test",
 }
 
 DEPRECATED_STAKING_PROGRAMS = {
