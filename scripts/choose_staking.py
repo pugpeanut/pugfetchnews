@@ -107,6 +107,7 @@ STAKING_PROGRAMS = {
     "quickstart_beta_expert_test": "0xtestfizzbuzz",
     "quickstart_beta_expert_test": "0xtestgudday",
     "quickstart_beta_expert_test": "0xtestsnoobdoug",
+    "quickstart_beta_expert_test": "0xtestshelloket",
 }
 
 DEPRECATED_STAKING_PROGRAMS = {
