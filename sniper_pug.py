@@ -9,15 +9,29 @@ from datetime import datetime, timedelta
 import os
 import pytz
 
-GITHUB_RAW_URL = "https://raw.githubusercontent.com/pugpeanut/pugfetchnews/refs/heads/main/scripts/choose_staking.py"
+#GITHUB_RAW_URL = "https://raw.githubusercontent.com/pugpeanut/pugfetchnews/refs/heads/main/scripts/choose_staking.py"
+GITHUB_RAW_URL = "https://raw.githubusercontent.com/valory-xyz/trader-quickstart/refs/heads/main/scripts/choose_staking.py"
+GITHUB_RAW_URL_UNIQUE = f"{GITHUB_RAW_URL}?_={int(time.time())}"
 FILE_PATH = "staking_programs.txt"
+API_TOKEN = "" #put token
+CHAT_ID = "" #put chat id
+TIME_STEP = 1800 #put time sleep, 30 minute run
 
 def fetch_staking_programs():
     try:
-        response = requests.get(GITHUB_RAW_URL)
+        headers = {
+            "Cache-Control": "no-cache",
+
+            "Pragma": "no-cache",
+        }
+
+        response = requests.get(GITHUB_RAW_URL_UNIQUE,headers=headers)
         response.raise_for_status()
 
         content = response.text
+
+        response = requests.get("https://api.github.com/rate_limit")
+        print(f"rate limit: {response.json()}")
 
         match = re.search(r'STAKING_PROGRAMS\s*=\s*(\{.*?\})', content, re.DOTALL)
 
@@ -44,7 +58,9 @@ def fetch_staking_programs():
                     diff_dash = ''.join(map(str, diff))
                     print('\n'.join(diff))
                     print("Differences detected!")
-                    show_difference(staking_programs_string, diff_dash)
+                    send_message(API_TOKEN,CHAT_ID,"new program available, do git pull quickstart!")
+
+                    #show_difference(staking_programs_string, diff_dash)
 
             with open(FILE_PATH, 'w') as file:
                 file.write(staking_programs_string)
@@ -53,21 +69,38 @@ def fetch_staking_programs():
         print(f"An error occurred: {e}")
 
 def show_difference(new_string, diff_dash):
-    custom_messagebox("Staking Programs Update", diff_dash)
+    custom_messagebox("Staking Programs Update! New Program Available", diff_dash)
 
 def pub_msg_telegram(token, chat_id, message):
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     payload = {
+        "chat_id": chat_id,
+        "text": message
+    }
+    response = requests.post(url, json=payload)
+
+    return response.json()
+
+
+def send_message(token, chat_id, message):
+    url = f'https://api.telegram.org/bot{token}/sendMessage'
+    payload = {
         'chat_id': chat_id,
         'text': message
     }
-    response = requests.post(url, json=payload)
-    return response.json()
+
+    response = requests.post(url, data=payload)
+
+    if response.status_code == 200:
+        print('Message sent successfully!')
+    else:
+        print('Failed to send message:', response.text)
+
 
 def start_checking():
     while True:
         fetch_staking_programs()
-        time.sleep(30)
+        time.sleep(TIME_STEP)
 
 def custom_messagebox(title, message):
     top = tk.Toplevel()
@@ -94,9 +127,6 @@ def on_start_button_click():
 
 root = tk.Tk()
 root.title("Staking Programs Checker")
-
-
 start_button = tk.Button(root, text="Start Checking", command=on_start_button_click)
 start_button.pack(pady=20)
-
 root.mainloop()
